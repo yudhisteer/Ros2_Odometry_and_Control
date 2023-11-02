@@ -1,0 +1,103 @@
+# go to: yudhi@Yudhisteer:~/bumperbot_ws/src/bumperbot_py_examples/bumperbot_py_examples$ 
+# create a new python file called "simple_publisher.py"
+touch simple_publisher.py
+
+# 1. create publisher in python
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import String
+
+class SimplePublisher(Node):
+    def __init__(self) -> None:
+        """
+        Constructor for the SimplePublisher class.
+
+        Initializes a ROS 2 node, creates a publisher, and sets up a timer for publishing messages.
+        """
+        super().__init__("simple_publisher")
+        
+        # Create a new publisher inheriting from the Node class.
+        # Define the type of message the publisher will send within the topic (in this case, it's a string).
+        # Specify the name of the topic as "chatter" and the size of the queue as 10.
+        self.pub_ = self.create_publisher(String, "chatter", 10)
+        
+        # Initialize a counter for tracking the number of messages published.
+        self.counter_ = 0
+        
+        # Specify the frequency at which messages will be published (1 message per second).
+        self.frequency_ = 1.0
+        
+        # Log a message to indicate the publishing frequency.
+        self.get_logger().info("Publishing at %d Hz" % self.frequency_)
+        
+        # Create a timer to periodically call the timerCallback function.
+        self.timer_ = self.create_timer(self.frequency_, self.timerCallback)
+        
+    def timerCallback(self):
+        # Create a new String message.
+        msg = String()
+        msg.data = "Hello Ros2 - counter: %d" % self.counter_
+        
+        # Publish the message to the "chatter" topic.
+        self.pub_.publish(msg)
+        
+        # Increment the message counter for the next message.
+        self.counter_ += 1
+
+def main():
+    # Initialize the ROS 2 system.
+    rclpy.init()
+    
+    # Create an instance of the SimplePublisher class.
+    simple_publisher = SimplePublisher()
+    
+    # Spin to keep the node running until it's shutdown.
+    rclpy.spin(simple_publisher)
+    
+    # Clean up resources when the node is done.
+    simple_publisher.destroy_node()
+    
+    # Shutdown the ROS 2 system.
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
+
+# 2. Add the libraries you used in apckage.xml
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+
+# 3. Tell setup.py how to execute the publisher:
+# we tell him to run the main function
+    entry_points={
+        'console_scripts': [
+            'simple_publisher = bumperbot_py_examples.simple_publisher:main'
+        ],
+
+# 4. Open new terminal and go to workspace
+cd bumperbot_ws
+
+# 5. Build package
+colcon build
+
+# 6. Open new terminal and go to install foledr in workspace
+cd install
+
+# 7. Source setup.bash
+. setup.bash
+
+# 8. Start teh publisher
+ros2 run bumperbot_py_examples simple_publisher
+
+# 9. Open new terminal and check for topic (chatter)
+ros2 topic list
+
+# 10. Get message from topic (chatter)
+ros2 topic echo /chatter
+
+# 11. Get more information about our topic
+ros2 topic info /chatter --verbose
+
+# 12. Get frequency of message
+ros2 topic hz /chatter
+
