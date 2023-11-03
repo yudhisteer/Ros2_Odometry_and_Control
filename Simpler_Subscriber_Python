@@ -1,0 +1,91 @@
+# go to: yudhi@Yudhisteer:~/bumperbot_ws/src/bumperbot_py_examples/bumperbot_py_examples$ 
+# create a new python file called "simple_subscriber.py"
+touch simple_subscriber.py
+
+
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import String
+
+# 1. create a subscriber in python
+class SimpleSubscriber(Node):
+    def __init__(self):
+        """
+        Constructor for the SimpleSubscriber class.
+
+        Initializes a ROS 2 node, creates a subscription to the "chatter" topic, and sets up a callback function for incoming messages.
+        """
+        super().__init__("simple_subscriber")
+        
+        # Create a subscription for the "chatter" topic, expecting messages of type String.
+        # The maximum size of the message queue is set to 10.
+        self.sub_ = self.create_subscription(String, "chatter", self.msgCallback, 10)
+        
+    def msgCallback(self, msg):
+        """
+        Callback function for handling incoming messages.
+
+        When a message is received on the "chatter" topic, this function is called to process the message and log its content.
+        
+        :param msg: The received message.
+        :type msg: std_msgs.msg.String
+        """
+        self.get_logger().info("I heard: %s" % msg.data)
+        
+def main():
+    # Initialize the ROS 2 system.
+    rclpy.init()
+    
+    # Create an instance of the SimpleSubscriber class.
+    simple_subscriber = SimpleSubscriber()
+    
+    # Spin to keep the node running until it's shutdown.
+    rclpy.spin(simple_subscriber)
+    
+    # Clean up resources when the node is done.
+    simple_subscriber.destroy_node()
+    
+    # Shutdown the ROS 2 system.
+    rclpy.shutdown()
+    
+    
+if __name__ == '__main__':
+    main()
+
+# 2. Tell setup.py how to execute the subscriber:
+# we tell him to run the main function
+    entry_points={
+        'console_scripts': [
+            'simple_publisher = bumperbot_py_examples.simple_publisher:main',
+            'simple_subscriber = bumperbot_py_examples.simple_subscriber:main'
+        ],
+
+# 3. go to the workspace
+cd workspace
+
+# 4. Build package
+colcon build
+
+# 5. Source workspace in a different terminal
+. install/setup.bash
+
+# 6. Start the subscriber
+ros2 run bumperbot_py_examples simple_subscriber
+
+# 7. Publish a new message
+ros2 topic pub /chatter std_msgs/String "data: 'Hello Ros2'"
+# Subscriber will hear message of publisher
+
+# 8. Open new terminal and check for topic (chatter)
+ros2 topic list
+
+# 9. Get message from topic (chatter)
+ros2 topic echo /chatter
+
+# 10. Get more information about our topic
+ros2 topic info /chatter --verbose
+
+
+
+
+

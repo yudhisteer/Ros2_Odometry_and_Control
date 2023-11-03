@@ -86,7 +86,7 @@ cd install
 # 7. Source setup.bash
 . setup.bash
 
-# 8. Start teh publisher
+# 8. Start the publisher
 ros2 run bumperbot_py_examples simple_publisher
 
 # 9. Open new terminal and check for topic (chatter)
